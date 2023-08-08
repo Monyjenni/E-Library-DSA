@@ -1,0 +1,19 @@
+- Case 1 : ( Store Data )
+    
+    -Login
+    
+- Case 2:
+    
+    -Menu 
+    
+    - View Report
+        - View Borrowed Book : Borrowed Book Id, Date , Student Info
+        - View Returned Book: Returned Book Id, Date , Student Info
+    - Add New Book
+        - Insert Book Id, Book Name
+    - Borrow Book Service
+        - Search By Id :
+            - Found : Complete Student Info — Successfully Borrowed
+            - Not Found: Not Available
+    - Return Book Service
+        - Enter Book Id with date
