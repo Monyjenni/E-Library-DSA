@@ -63,13 +63,13 @@ public:
   void viewUserBorrowedBooks(usersData *user) {
     cout << "User " << user->userNAME << "'s Borrowed Books:\n";
     cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t\t BOOK NAME\n";
+    cout << "Book ID\t\t\t\t BOOK NAME\t\t BORROW DATE\n";
     cout << "-----------------------------------------------\n";
 
     BookData *currentBook = user->borrowedBooks;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-           << "\n";
+          << "\t\t " << user->DATE << "\n";
       currentBook = currentBook->next;
     }
 
@@ -85,34 +85,115 @@ public:
     BookData *currentBook = booksHead;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-           << "\n";
+          << "\n";
+      currentBook = currentBook->next;
+    }
+
+    cout << "------------------------------------------\n";
+  }
+  void viewReturnedBooks() {
+    cout << "Returned Books:\n";
+    cout << "------------------------------------------\n";
+    cout << "Book ID\t\t\t\t BOOK NAME\t\t RETURN DATE\n";
+    cout << "------------------------------------------\n";
+
+    BookData *currentBook = booksHead;
+    while (currentBook != nullptr) {
+      // Display book info and return date (placeholder)
+      cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
+          << "\t\t "
+          << "DD-MM-YYYY"
+          << "\n";
       currentBook = currentBook->next;
     }
 
     cout << "------------------------------------------\n";
   }
 
-  void viewReturnedBooks() {
-    cout << "Returned Books:\n";
-    cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t\t BOOK NAME\n";
-    cout << "------------------------------------------\n";
-
-    // Add code to display returned books here
-
-    cout << "------------------------------------------\n";
-  }
-
   void borrowBook(int userID, int bookID, const string &borrowDate) {
-    // Add code to borrow a book here
+    // Find the user
+    usersData *currentUser = usersHead;
+    while (currentUser != nullptr) {
+      if (currentUser->userID == userID) {
+        // Find the book to borrow
+        BookData *currentBook = booksHead;
+        while (currentBook != nullptr) {
+          if (currentBook->bookID == bookID) {
+            // Update user's borrowed books
+            BookData *newBorrowedBook =
+                new BookData{currentBook->bookID, currentBook->bookNAME};
+            newBorrowedBook->next = currentUser->borrowedBooks;
+            currentUser->borrowedBooks = newBorrowedBook;
+
+            cout << "Book successfully borrowed." << endl;
+            return;
+          }
+          currentBook = currentBook->next;
+        }
+        break; // Book not found
+      }
+      currentUser = currentUser->next;
+    }
+
+    cout << "User or book not found. Borrow failed." << endl;
   }
 
   void returnBook(int userID, int bookID) {
-    // Add code to return a book here
+    // Find the user
+    usersData *currentUser = usersHead;
+    while (currentUser != nullptr) {
+      if (currentUser->userID == userID) {
+        // Find the borrowed book
+        BookData *currentBook = currentUser->borrowedBooks;
+        BookData *prevBook = nullptr;
+
+        while (currentBook != nullptr) {
+          if (currentBook->bookID == bookID) {
+            // Update user's borrowed books and move to returned books
+            if (prevBook) {
+              prevBook->next = currentBook->next;
+            } else {
+              currentUser->borrowedBooks = currentBook->next;
+            }
+
+            // Move to the beginning of returned books
+            currentBook->next = booksHead;
+            booksHead = currentBook;
+
+            cout << "Book successfully returned." << endl;
+            return;
+          }
+          prevBook = currentBook;
+          currentBook = currentBook->next;
+        }
+        break; // Book not found
+      }
+      currentUser = currentUser->next;
+    }
+
+    cout << "User or borrowed book not found. Return failed." << endl;
   }
 
   void addNewBook() {
-    // Add code to add a new book here
+    int bookID;
+    string bookName;
+    string dateAdded;
+
+    cout << "Enter the Book ID: ";
+    cin >> bookID;
+
+    cout << "Enter the Book Name: ";
+    cin.ignore(); // Clear newline from previous input
+    getline(cin, bookName);
+
+    cout << "Enter the date of adding (DD-MM-YYYY): ";
+    cin >> dateAdded;
+
+    BookData *newBook = new BookData{bookID, bookName};
+    newBook->next = booksHead;
+    booksHead = newBook;
+
+    cout << "Book added successfully." << endl;
   }
 };
 
