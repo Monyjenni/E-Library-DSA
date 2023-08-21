@@ -7,7 +7,6 @@ struct Admin {
   string password;
 };
 
-// Function to validate admin login credentials
 bool isValidAdmin(const Admin &admin, const string &inputUsername,
                   const string &inputPassword) {
   return (admin.username == inputUsername && admin.password == inputPassword);
@@ -25,7 +24,7 @@ struct usersData {
   char userGender;
   int userAge;
   string DATE;
-  BookData *borrowedBooks; // Linked list of borrowed book IDs
+  BookData *borrowedBooks;
   usersData *next;
 };
 
@@ -69,7 +68,7 @@ public:
     BookData *currentBook = user->borrowedBooks;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-          << "\t\t " << user->DATE << "\n";
+           << "\t\t " << user->DATE << "\n";
       currentBook = currentBook->next;
     }
 
@@ -79,13 +78,13 @@ public:
   void viewAllBooks() {
     cout << "All Books:\n";
     cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t\t BOOK NAME\n";
+    cout << "Book ID\t\t\t BOOK NAME\n";
     cout << "------------------------------------------\n";
 
     BookData *currentBook = booksHead;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-          << "\n";
+           << "\n";
       currentBook = currentBook->next;
     }
 
@@ -99,11 +98,10 @@ public:
 
     BookData *currentBook = booksHead;
     while (currentBook != nullptr) {
-      // Display book info and return date (placeholder)
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-          << "\t\t "
-          << "DD-MM-YYYY"
-          << "\n";
+           << "\t\t "
+           << "DD-MM-YYYY"
+           << "\n";
       currentBook = currentBook->next;
     }
 
@@ -111,26 +109,30 @@ public:
   }
 
   void borrowBook(int userID, int bookID, const string &borrowDate) {
-    // Find the user
     usersData *currentUser = usersHead;
     while (currentUser != nullptr) {
       if (currentUser->userID == userID) {
-        // Find the book to borrow
         BookData *currentBook = booksHead;
+        BookData *prevBook = nullptr;
         while (currentBook != nullptr) {
           if (currentBook->bookID == bookID) {
-            // Update user's borrowed books
             BookData *newBorrowedBook =
                 new BookData{currentBook->bookID, currentBook->bookNAME};
             newBorrowedBook->next = currentUser->borrowedBooks;
             currentUser->borrowedBooks = newBorrowedBook;
+            if (prevBook) {
+              prevBook->next = currentBook->next;
+            } else {
+              booksHead = currentBook->next;
+            }
 
             cout << "Book successfully borrowed." << endl;
             return;
           }
+          prevBook = currentBook;
           currentBook = currentBook->next;
         }
-        break; // Book not found
+        break;
       }
       currentUser = currentUser->next;
     }
@@ -139,24 +141,19 @@ public:
   }
 
   void returnBook(int userID, int bookID) {
-    // Find the user
     usersData *currentUser = usersHead;
     while (currentUser != nullptr) {
       if (currentUser->userID == userID) {
-        // Find the borrowed book
         BookData *currentBook = currentUser->borrowedBooks;
         BookData *prevBook = nullptr;
 
         while (currentBook != nullptr) {
           if (currentBook->bookID == bookID) {
-            // Update user's borrowed books and move to returned books
             if (prevBook) {
               prevBook->next = currentBook->next;
             } else {
               currentUser->borrowedBooks = currentBook->next;
             }
-
-            // Move to the beginning of returned books
             currentBook->next = booksHead;
             booksHead = currentBook;
 
@@ -166,7 +163,7 @@ public:
           prevBook = currentBook;
           currentBook = currentBook->next;
         }
-        break; // Book not found
+        break;
       }
       currentUser = currentUser->next;
     }
@@ -177,17 +174,17 @@ public:
   void addNewBook() {
     int bookID;
     string bookName;
-    string dateAdded;
+    string date;
 
     cout << "Enter the Book ID: ";
     cin >> bookID;
 
     cout << "Enter the Book Name: ";
-    cin.ignore(); // Clear newline from previous input
+    cin.ignore();
     getline(cin, bookName);
 
     cout << "Enter the date of adding (DD-MM-YYYY): ";
-    cin >> dateAdded;
+    cin >> date;
 
     BookData *newBook = new BookData{bookID, bookName};
     newBook->next = booksHead;
@@ -196,6 +193,9 @@ public:
     cout << "Book added successfully." << endl;
   }
 };
+bool isValidChoice(char choice) {
+  return choice == 'Y' || choice == 'y' || choice == 'N' || choice == 'n';
+}
 
 int main() {
   Admin admin;
@@ -204,126 +204,137 @@ int main() {
 
   Library library;
 
-  usersData *user1 = new usersData{1, "Nettra", 'F', 25, "2023-08-08"};
-  user1->borrowedBooks = new BookData{101, "Book A"};
-  user1->borrowedBooks->next = new BookData{102, "Book B"};
-
+  usersData *user1 = new usersData{1, "Nettra", 'F', 25};
+  user1->borrowedBooks = nullptr;
   library.addUser(user1);
 
-  usersData *user2 = new usersData{2, "Sophavinn", 'M', 18, "2023-01-12"};
-  user2->borrowedBooks = new BookData{103, "Book C"};
-
+  usersData *user2 = new usersData{2, "Sophavinn", 'M', 18};
+  user2->borrowedBooks = nullptr;
   library.addUser(user2);
 
-  // Creating book data for the viewAllBooks function
   BookData *allBooks = new BookData{101, "Book A"};
-  allBooks->next = new BookData{102, "Book B"};
+  allBooks->next = new BookData{102, "Book B", nullptr};
   allBooks->next->next = new BookData{103, "Book C"};
-  allBooks->next->next->next = new BookData{104, "Book D"};
+  allBooks->next->next->next = new BookData{104, "Book D", nullptr};
 
   library.addBook(allBooks);
 
   string inputUsername;
   string inputPassword;
+  bool loggedIn = false;
 
-  cout << "Welcome admin to the Login!" << endl;
-  cout << "Username: ";
-  cin >> inputUsername;
-  cout << "Password: ";
-  cin >> inputPassword;
+  while (!loggedIn) {
+    cout << "Welcome admin to the Login!" << endl;
+    cout << "Username: ";
+    cin >> inputUsername;
+    cout << "Password: ";
+    cin >> inputPassword;
 
-  if (isValidAdmin(admin, inputUsername, inputPassword)) {
-    cout << "Login successful. Welcome, " << admin.username << "!" << endl;
-
-    int choice;
-    bool end = false;
-    char YN;
-
-    while (!end) {
-      cout << "Choose your option: " << endl;
-      cout << "1 - View User's Borrowed Books" << endl;
-      cout << "2 - View All Books" << endl;
-      cout << "3 - View Returned Books" << endl;
-      cout << "4 - Borrow Book" << endl;
-      cout << "5 - Return Book" << endl;
-      cout << "6 - Add New Book" << endl;
-      cout << "7 - Exit" << endl;
-      cout << "Enter your choice: ";
-
-      cin >> choice;
-      switch (choice) {
-      case 1: {
-        int userID;
-        cout << "Enter the user ID: ";
-        cin >> userID;
-
-        usersData *currentUser = library.usersHead;
-        while (currentUser != nullptr) {
-          if (currentUser->userID == userID) {
-            library.viewUserBorrowedBooks(currentUser);
-            break;
-          }
-          currentUser = currentUser->next;
-        }
-        break;
-      }
-      case 2: {
-        library.viewAllBooks();
-        break;
-      }
-      case 3: {
-        library.viewReturnedBooks();
-        break;
-      }
-      case 4: {
-        int userID, bookID;
-        string borrowDate;
-        cout << "Enter the user ID: ";
-        cin >> userID;
-        cout << "Enter the book ID to borrow: ";
-        cin >> bookID;
-        cout << "Enter the borrow date (YYYY-MM-DD): ";
-        cin >> borrowDate;
-
-        library.borrowBook(userID, bookID, borrowDate);
-        break;
-      }
-      case 5: {
-        int userID, bookID;
-        cout << "Enter the user ID: ";
-        cin >> userID;
-        cout << "Enter the book ID to return: ";
-        cin >> bookID;
-
-        library.returnBook(userID, bookID);
-        break;
-      }
-      case 6: {
-        library.addNewBook();
-        break;
-      }
-      case 7:
-        end = true;
-        break;
-      default:
-        cout << "Invalid choice. Please select a valid option." << endl;
-        break;
-      }
-
-      if (!end) {
-        cout << "Would you like to go back to the menu? " << endl;
-        cout << "If yes then press Y, if no press N" << endl;
-        cout << "Choice: ";
-        cin >> YN;
-        if (YN == 'N') {
-          end = true;
-        }
+    if (isValidAdmin(admin, inputUsername, inputPassword)) {
+      loggedIn = true;
+      cout << "Login successful. Welcome, " << admin.username << "!" << endl;
+    } else {
+      cout << "Invalid username or password." << endl;
+      char tryAgain;
+      cout << "Wanna try again? (Y/N): ";
+      cin >> tryAgain;
+      if (tryAgain != 'Y' && tryAgain != 'y') {
+        cout << "Exiting program. Goodbye!" << endl;
+        return 0;
       }
     }
-
-  } else {
-    cout << "Invalid username or password. Access denied." << endl;
   }
+  int choice;
+  bool end = false;
+  char YN;
 
+  while (!end) {
+    cout << "Choose your option: " << endl;
+    cout << "1 - View User's Borrowed Books" << endl;
+    cout << "2 - View All Books" << endl;
+    cout << "3 - View Returned Books" << endl;
+    cout << "4 - Borrow Book" << endl;
+    cout << "5 - Return Book" << endl;
+    cout << "6 - Add New Book" << endl;
+    cout << "7 - Exit" << endl;
+    cout << "Enter your choice: ";
+
+    cin >> choice;
+    switch (choice) {
+    case 1: {
+      int userID;
+      cout << "Enter the user ID: ";
+      cin >> userID;
+
+      usersData *currentUser = library.usersHead;
+      while (currentUser != nullptr) {
+        if (currentUser->userID == userID) {
+          library.viewUserBorrowedBooks(currentUser);
+          break;
+        }
+        currentUser = currentUser->next;
+      }
+      break;
+    }
+    case 2: {
+      library.viewAllBooks();
+      break;
+    }
+    case 3: {
+      library.viewReturnedBooks();
+      break;
+    }
+    case 4: {
+      int userID, bookID;
+      string borrowDate;
+      cout << "Enter the user ID: ";
+      cin >> userID;
+      cout << "Enter the book ID to borrow: ";
+      cin >> bookID;
+      cout << "Enter the borrow date (DD/MM/YYYY): ";
+      cin >> borrowDate;
+
+      library.borrowBook(userID, bookID, borrowDate);
+      break;
+    }
+    case 5: {
+      int userID, bookID;
+      cout << "Enter the user ID: ";
+      cin >> userID;
+      cout << "Enter the book ID to return: ";
+      cin >> bookID;
+
+      library.returnBook(userID, bookID);
+      break;
+    }
+    case 6: {
+      library.addNewBook();
+      break;
+    }
+    case 7:
+      end = true;
+      break;
+    default:
+      cout << "Invalid choice. Please select a valid option." << endl;
+      break;
+    }
+  }
+  if (!end) {
+    cout << "Would you like to go back to the menu? " << endl;
+    cout << "If yes then press Y, if no press N" << endl;
+
+    do {
+      cout << "Choice: ";
+      cin >> YN;
+      if (!isValidChoice(YN)) {
+        cout << "Invalid choice. Please enter 'Y' or 'N'." << endl;
+      }
+    } while (!isValidChoice(YN));
+
+    if (YN == 'N' || YN == 'n') {
+      end = true;
+    }
+  }
+  cout << "Thank you for using our admin dashboard ,Goodbye People!" << endl;
   return 0;
 }
