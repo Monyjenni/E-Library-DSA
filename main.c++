@@ -58,23 +58,6 @@ public:
       temp->next = book;
     }
   }
-
-  void viewUserBorrowedBooks(usersData *user) {
-    cout << "User " << user->userNAME << "'s Borrowed Books:\n";
-    cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t\t BOOK NAME\t\t BORROW DATE\n";
-    cout << "-----------------------------------------------\n";
-
-    BookData *currentBook = user->borrowedBooks;
-    while (currentBook != nullptr) {
-      cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-           << "\t\t " << user->DATE << "\n";
-      currentBook = currentBook->next;
-    }
-
-    cout << "------------------------------------------\n";
-  }
-
   void viewAllBooks() {
     cout << "All Books:\n";
     cout << "------------------------------------------\n";
@@ -90,24 +73,51 @@ public:
 
     cout << "------------------------------------------\n";
   }
-  void viewReturnedBooks() {
-    cout << "Returned Books:\n";
+  void viewUserBorrowedBooks(usersData *user) {
+    cout << "User " << user->userNAME << "'s Borrowed Books:\n";
     cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t\t BOOK NAME\t\t RETURN DATE\n";
-    cout << "------------------------------------------\n";
+    cout << "Book ID\t\t\t\t BOOK NAME\t\t BORROW DATE\n";
+    cout << "-----------------------------------------------\n";
 
-    BookData *currentBook = booksHead;
+    if (!user->borrowedBooks) {
+      cout << "No borrowed books found." << endl;
+      cout << "------------------------------------------\n";
+      return;
+    }
+
+    BookData *currentBook = user->borrowedBooks;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-           << "\t\t "
-           << "DD-MM-YYYY"
-           << "\n";
+           << "\t\t " << user->DATE << "\n";
       currentBook = currentBook->next;
     }
 
     cout << "------------------------------------------\n";
   }
+  void viewReturnedBooks() {
+    cout << "Returned Books:\n";
+    cout << "------------------------------------------\n";
+    cout << "Book ID\t\t\t\t BOOK NAME\n";
+    cout << "------------------------------------------\n";
 
+    if (!booksHead) {
+      cout << "No returned books found." << endl;
+    } else {
+      bool hasReturnedBooks = false;
+      BookData *currentBook = booksHead;
+      while (currentBook != nullptr) {
+        cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
+             << "\n";
+        currentBook = currentBook->next;
+        hasReturnedBooks = true;
+      }
+
+      if (!hasReturnedBooks) {
+        cout << "No returned books found." << endl;
+      }
+    }
+    cout << "------------------------------------------\n";
+  }
   void borrowBook(int userID, int bookID, const string &borrowDate) {
     usersData *currentUser = usersHead;
     while (currentUser != nullptr) {
@@ -250,8 +260,8 @@ int main() {
 
   while (!end) {
     cout << "Choose your option: " << endl;
-    cout << "1 - View User's Borrowed Books" << endl;
-    cout << "2 - View All Books" << endl;
+    cout << "1 - View All Books" << endl;
+    cout << "2 - View User's Borrowed Books" << endl;
     cout << "3 - View Returned Books" << endl;
     cout << "4 - Borrow Book" << endl;
     cout << "5 - Return Book" << endl;
@@ -262,6 +272,10 @@ int main() {
     cin >> choice;
     switch (choice) {
     case 1: {
+      library.viewAllBooks();
+      break;
+    }
+    case 2: {
       int userID;
       cout << "Enter the user ID: ";
       cin >> userID;
@@ -274,10 +288,6 @@ int main() {
         }
         currentUser = currentUser->next;
       }
-      break;
-    }
-    case 2: {
-      library.viewAllBooks();
       break;
     }
     case 3: {
