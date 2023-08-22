@@ -15,6 +15,7 @@ bool isValidAdmin(const Admin &admin, const string &inputUsername,
 struct BookData {
   int bookID;
   string bookNAME;
+  string dateAdded;
   BookData *next;
 };
 
@@ -58,21 +59,31 @@ public:
       temp->next = book;
     }
   }
+  void viewUser(usersData *user) {
+    cout << "User Information:\n";
+    cout << "------------------------------------------\n";
+    cout << "User ID: " << user->userID << endl;
+    cout << "User Name: " << user->userNAME << endl;
+    cout << "Gender: " << user->userGender << endl;
+    cout << "Age: " << user->userAge << endl;
+    cout << "------------------------------------------\n";
+  }
+
   void viewAllBooks() {
     cout << "All Books:\n";
-    cout << "------------------------------------------\n";
-    cout << "Book ID\t\t\t BOOK NAME\n";
-    cout << "------------------------------------------\n";
+    cout << "--------------------------------------------------\n";
+    cout << "Book ID\t\t\t BOOK NAME\t\t DATE \n";
+    cout << "--------------------------------------------------\n";
 
     BookData *currentBook = booksHead;
     while (currentBook != nullptr) {
       cout << currentBook->bookID << "\t\t\t\t " << currentBook->bookNAME
-           << "\n";
+           << "\t\t " << currentBook->dateAdded << "\n";
       currentBook = currentBook->next;
     }
-
-    cout << "------------------------------------------\n";
+    cout << "--------------------------------------------------\n";
   }
+
   void viewUserBorrowedBooks(usersData *user) {
     cout << "User " << user->userNAME << "'s Borrowed Books:\n";
     cout << "------------------------------------------\n";
@@ -196,7 +207,7 @@ public:
     cout << "Enter the date of adding (DD-MM-YYYY): ";
     cin >> date;
 
-    BookData *newBook = new BookData{bookID, bookName};
+    BookData *newBook = new BookData{bookID, bookName, date};
     newBook->next = booksHead;
     booksHead = newBook;
 
@@ -222,10 +233,11 @@ int main() {
   user2->borrowedBooks = nullptr;
   library.addUser(user2);
 
-  BookData *allBooks = new BookData{101, "Book A"};
-  allBooks->next = new BookData{102, "Book B", nullptr};
-  allBooks->next->next = new BookData{103, "Book C"};
-  allBooks->next->next->next = new BookData{104, "Book D", nullptr};
+  BookData *allBooks = new BookData{101, "Book A", "01-01-2023"};
+  allBooks->next = new BookData{102, "Book B", "02-01-2023", nullptr};
+  allBooks->next->next = new BookData{103, "Book C", "03-01-2023"};
+  allBooks->next->next->next =
+      new BookData{104, "Book D", "04-01-2023", nullptr};
 
   library.addBook(allBooks);
 
@@ -259,6 +271,7 @@ int main() {
   char YN;
 
   while (!end) {
+    cout << "----------Welcome To Admin Dashboard-----------" << endl;
     cout << "Choose your option: " << endl;
     cout << "1 - View All Books" << endl;
     cout << "2 - View User's Borrowed Books" << endl;
@@ -266,7 +279,9 @@ int main() {
     cout << "4 - Borrow Book" << endl;
     cout << "5 - Return Book" << endl;
     cout << "6 - Add New Book" << endl;
-    cout << "7 - Exit" << endl;
+    cout << "7 - View Users" << endl;
+    cout << "8 - Add New User" << endl;
+    cout << "9 - Exit" << endl;
     cout << "Enter your choice: ";
 
     cin >> choice;
@@ -301,7 +316,7 @@ int main() {
       cin >> userID;
       cout << "Enter the book ID to borrow: ";
       cin >> bookID;
-      cout << "Enter the borrow date (DD/MM/YYYY): ";
+      cout << "Enter the borrow date (DD-MM-YYYY): ";
       cin >> borrowDate;
 
       library.borrowBook(userID, bookID, borrowDate);
@@ -321,7 +336,45 @@ int main() {
       library.addNewBook();
       break;
     }
-    case 7:
+    case 7: {
+      cout << "Enter the user ID: ";
+      int userID;
+      cin >> userID;
+
+      usersData *currentUser = library.usersHead;
+      while (currentUser != nullptr) {
+        if (currentUser->userID == userID) {
+          library.viewUser(currentUser);
+          break;
+        }
+        currentUser = currentUser->next;
+      }
+      break;
+    }
+    case 8: {
+      int userID;
+      string userName;
+      char userGender;
+      int userAge;
+
+      cout << "Enter User ID: ";
+      cin >> userID;
+      cout << "Enter User Name: ";
+      cin.ignore();
+      getline(cin, userName);
+      cout << "Enter User Gender (M/F): ";
+      cin >> userGender;
+      cout << "Enter User Age: ";
+      cin >> userAge;
+
+      usersData *newUser =
+          new usersData{userID, userName, userGender, userAge, "", nullptr};
+      library.addUser(newUser);
+
+      cout << "User added successfully." << endl;
+      break;
+    }
+    case 9:
       end = true;
       break;
     default:
